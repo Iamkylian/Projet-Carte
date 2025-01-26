@@ -1,0 +1,56 @@
+# Environnement virtuel Python
+venv/
+env/
+.env/
+.venv/
+
+# Fichiers Python compilés
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Fichiers IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Fichiers de logs
+*.log
+logs/
+
+# Fichiers de base de données
+*.db
+*.sqlite3
+
+# Fichiers de configuration locaux
+.env
+.env.local
+.env.*.local
+
+# Fichiers temporaires
+tmp/
+temp/
+
+# Fichiers de cache
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Fichiers OSM
+*.osm
+*.pbf
+*.csv
+
+# Autres
+node_modules/
+.DS_Store
+Thumbs.db
