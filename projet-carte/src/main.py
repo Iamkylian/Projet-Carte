@@ -23,7 +23,7 @@ def main():
             "ways": "./../data/france/ariege/osm_ways.csv",
             "points": {
                 "start": "469819297", # Saint-Pierre-de-Rivière
-                "end": ["1792742726", "1205464576", "8490363670"] # Las Prados, Cabane Coumauzil - barguillere (marche pas)
+                "end": ["1792742726", "8490363670"] # Las Prados, Grotte Bernard
             }
         },
         # {
@@ -32,7 +32,7 @@ def main():
         #     "ways": "./../data/france/midipyr/osm_ways.csv",
         #     "points": {
         #         "start": "469819297",
-        #         "end": ["1205464576", "1792742726"]
+        #         "end": ["1792742726", "8490363670"] # Las Prados, Grotte Bernard
         #     }
         # }
     ]
@@ -93,6 +93,13 @@ def main():
                     print(f"Temps d'exécution : {ps_astar.total_tt:.3f} secondes")
                 else:
                     print("Aucun chemin trouvé")
+                
+                start_id = data['points']['start']
+                end_id = end_point
+                if start_id not in g.nodes:
+                    print(f"Point de départ {start_id} non trouvé dans le graphe")
+                if end_id not in g.nodes:
+                    print(f"Point d'arrivée {end_id} non trouvé dans le graphe")
                 
         except Exception as e:
             print(f"Erreur lors du chargement du graphe de {data['name']}: {str(e)}")
