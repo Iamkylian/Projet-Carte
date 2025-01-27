@@ -19,8 +19,14 @@ def run_benchmarks(generate_graphs=True):
         analyzer.load_graph()
         
         for end_point in data['points']['end']:
+            path_name = f"from_{data['points']['start']}_to_{end_point}"
             print(f"\nAnalyse du trajet : {data['points']['start']} → {end_point}")
-            results = analyzer.run_comparison(data['points']['start'], end_point)
+            results = analyzer.run_comparison(
+                data['points']['start'],
+                end_point,
+                path_name=path_name,
+                num_runs=5
+            )
             analyzer.print_results()
 
 def main():
