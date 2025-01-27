@@ -10,17 +10,17 @@ from memory_profiler import profile
 import seaborn as sns
 
 class BenchmarkAnalyzer:
-    def __init__(self, nodes_file, ways_file, generate_graphs=True, output_dir="./benchmarks"):
+    def __init__(self, nodes_file, ways_file, graph_name="default", generate_graphs=True, output_dir="./benchmarks"):
         self.nodes_file = nodes_file
         self.ways_file = ways_file
+        self.graph_name = graph_name
         self.graph = None
         self.generate_graphs = generate_graphs
         self.results = {}
-        self.output_dir = output_dir
+        self.output_dir = os.path.join(output_dir, graph_name)
         
-        # Créer le dossier de sortie s'il n'existe pas
         if generate_graphs:
-            os.makedirs(output_dir, exist_ok=True)
+            os.makedirs(self.output_dir, exist_ok=True)
         
     def load_graph(self):
         """Charge le graphe à partir des fichiers CSV"""
@@ -101,29 +101,30 @@ class BenchmarkAnalyzer:
 
     def _plot_execution_times(self):
         plt.figure(figsize=(10, 6))
-        data = [self.results['dijkstra']['times'], self.results['a_star']['times']]
-        plt.boxplot(data, labels=['Dijkstra', 'A*'])
-        plt.title('Comparaison des temps d\'exécution')
+        avg_times = [np.mean(self.results['dijkstra']['times']), 
+                    np.mean(self.results['a_star']['times'])]
+        plt.bar(['Dijkstra', 'A*'], avg_times)
+        plt.title(f'Temps d\'exécution moyen - {self.graph_name}')
         plt.ylabel('Temps (secondes)')
-        plt.savefig(os.path.join(self.output_dir, 'benchmark_execution_times.png'))
+        plt.savefig(os.path.join(self.output_dir, f'{self.graph_name}_execution_times.png'))
         plt.close()
 
     def _plot_memory_usage(self):
         plt.figure(figsize=(8, 6))
         memory_data = [self.results['dijkstra']['memory'], self.results['a_star']['memory']]
         plt.bar(['Dijkstra', 'A*'], memory_data)
-        plt.title('Utilisation moyenne de la mémoire')
+        plt.title(f'Utilisation moyenne de la mémoire - {self.graph_name}')
         plt.ylabel('Mémoire (MB)')
-        plt.savefig(os.path.join(self.output_dir, 'benchmark_memory_usage.png'))
+        plt.savefig(os.path.join(self.output_dir, f'{self.graph_name}_memory_usage.png'))
         plt.close()
 
     def _plot_cpu_usage(self):
         plt.figure(figsize=(8, 6))
         cpu_data = [self.results['dijkstra']['cpu'], self.results['a_star']['cpu']]
         plt.bar(['Dijkstra', 'A*'], cpu_data)
-        plt.title('Utilisation moyenne du CPU')
+        plt.title(f'Utilisation moyenne du CPU - {self.graph_name}')
         plt.ylabel('CPU (%)')
-        plt.savefig(os.path.join(self.output_dir, 'benchmark_cpu_usage.png'))
+        plt.savefig(os.path.join(self.output_dir, f'{self.graph_name}_cpu_usage.png'))
         plt.close()
 
     def _plot_combined_metrics(self):
@@ -142,11 +143,11 @@ class BenchmarkAnalyzer:
         
         plt.xlabel('Métrique')
         plt.ylabel('Valeur')
-        plt.title('Comparaison des performances')
+        plt.title(f'Comparaison des performances - {self.graph_name}')
         plt.xticks(x, labels)
         plt.legend()
         
-        plt.savefig(os.path.join(self.output_dir, 'benchmark_combined_metrics.png'))
+        plt.savefig(os.path.join(self.output_dir, f'{self.graph_name}_combined_metrics.png'))
         plt.close()
 
     def print_results(self):
