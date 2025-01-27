@@ -11,13 +11,29 @@ import seaborn as sns
 import sys
 
 class BenchmarkAnalyzer:
+    """Classe pour analyser et comparer les performances des algorithmes de recherche de chemin.
+    
+    Cette classe permet de :
+    - Charger et analyser un graphe à partir de fichiers CSV
+    - Comparer les performances de Dijkstra et A*
+    - Générer des graphiques de comparaison
+    - Mesurer l'utilisation des ressources (temps, mémoire, CPU)
+    
+    Attributes:
+        nodes_file (str): Chemin vers le fichier CSV des nœuds
+        ways_file (str): Chemin vers le fichier CSV des chemins
+        graph_name (str): Nom du graphe pour l'identification
+        graph (Graph): Instance du graphe chargé
+        generate_graphs (bool): Indique si les graphiques doivent être générés
+        output_dir (str): Dossier de sortie pour les graphiques
+    """
+
     def __init__(self, nodes_file, ways_file, graph_name="default", generate_graphs=True, output_dir="./benchmarks"):
         self.nodes_file = nodes_file
         self.ways_file = ways_file
         self.graph_name = graph_name
         self.graph = None
         self.generate_graphs = generate_graphs
-        self.results = {}
         self.output_dir = os.path.join(output_dir, graph_name)
         
         if generate_graphs:
@@ -28,31 +44,42 @@ class BenchmarkAnalyzer:
         self.graph = Graph()
         start_time = time.time()
         self.graph.load_from_csv(self.nodes_file, self.ways_file)
-        load_time = time.time() - start_time
-        return load_time
+        return time.time() - start_time
         
     @profile
-    def benchmark_algorithm(self, start_id, end_id, algorithm="dijkstra"):
-        """Exécute l'algorithme spécifié et mesure les performances"""
-        print(f"\nExécution de l'algorithme : {algorithm.upper()}")
-        print("-" * 40)
+    def _run_algorithm(self, start_id, end_id, algorithm="dijkstra"):
+        """Exécute un algorithme de recherche de chemin et mesure ses performances.
+        
+        Args:
+            start_id (str): Identifiant du point de départ
+            end_id (str): Identifiant du point d'arrivée
+            algorithm (str): Algorithme à utiliser ('dijkstra' ou 'a_star')
+            
+        Returns:
+            dict: Résultats des mesures de performance
+                {
+                    'algorithm': nom de l'algorithme,
+                    'time': temps d'exécution,
+                    'memory': utilisation mémoire (MB),
+                    'cpu': utilisation CPU (%),
+                    'path_length': nombre de nœuds dans le chemin,
+                    'distance': distance totale (km)
+                }
+        """
+        print(f"\n[INFO] 🚀 Démarrage de {algorithm.upper()}")
+        print(f"[INFO] 📍 De: {start_id} → Vers: {end_id}")
+        print("-"*40)
         
         process = psutil.Process(os.getpid())
-        start_mem = process.memory_info().rss
+        start_mem, start_cpu = process.memory_info().rss, process.cpu_percent()
         
         start_time = time.time()
-        start_cpu = process.cpu_percent()
+        distance, path = (self.graph.dijkstra(start_id, end_id) if algorithm == "dijkstra" 
+                         else self.graph.a_star(start_id, end_id))
+        execution_time = time.time() - start_time
         
-        if algorithm == "dijkstra":
-            distance, path = self.graph.dijkstra(start_id, end_id)
-        else:
-            distance, path = self.graph.a_star(start_id, end_id)
+        end_mem, end_cpu = process.memory_info().rss, process.cpu_percent()
         
-        end_time = time.time()
-        end_cpu = process.cpu_percent()
-        end_mem = process.memory_info().rss
-        
-        execution_time = end_time - start_time
         memory_usage = (end_mem - start_mem) / (1024 * 1024)  # Conversion en MB
         cpu_usage = (end_cpu + start_cpu) / 2
         
@@ -66,7 +93,20 @@ class BenchmarkAnalyzer:
         }
 
     def run_comparison(self, start_id, end_id, path_name="default", num_runs=10):
-        """Compare les performances de Dijkstra et A*"""
+        """Compare les performances des algorithmes Dijkstra et A*.
+        
+        Exécute plusieurs fois chaque algorithme et collecte les statistiques
+        de performance pour une comparaison fiable.
+        
+        Args:
+            start_id (str): Identifiant du point de départ
+            end_id (str): Identifiant du point d'arrivée
+            path_name (str): Nom du chemin pour l'identification
+            num_runs (int): Nombre d'exécutions pour chaque algorithme
+            
+        Returns:
+            dict: Résultats comparatifs des deux algorithmes
+        """
         self.path_name = path_name
         self.start_id = start_id
         self.end_id = end_id
@@ -76,147 +116,111 @@ class BenchmarkAnalyzer:
             os.makedirs(self.path_output_dir, exist_ok=True)
         
         # Initialisation des résultats
-        self.results = {
-            'dijkstra': {'times': [], 'memory': [], 'cpu': [], 'path_length': 0, 'distance': 0},
-            'a_star': {'times': [], 'memory': [], 'cpu': [], 'path_length': 0, 'distance': 0}
-        }
+        self.results = {algo: {'times': [], 'memory': [], 'cpu': [], 'path_length': 0, 'distance': 0}
+                       for algo in ['dijkstra', 'a_star']}
         
         # Exécution multiple des algorithmes
-        for _ in range(num_runs):
-            # Dijkstra
-            d_result = self.benchmark_algorithm(start_id, end_id, "dijkstra")
-            self.results['dijkstra']['times'].append(d_result['time'])
-            self.results['dijkstra']['memory'].append(d_result['memory'])
-            self.results['dijkstra']['cpu'].append(d_result['cpu'])
-            self.results['dijkstra']['path_length'] = d_result['path_length']
-            self.results['dijkstra']['distance'] = d_result['distance']
-            
-            # A*
-            a_result = self.benchmark_algorithm(start_id, end_id, "a_star")
-            self.results['a_star']['times'].append(a_result['time'])
-            self.results['a_star']['memory'].append(a_result['memory'])
-            self.results['a_star']['cpu'].append(a_result['cpu'])
-            self.results['a_star']['path_length'] = a_result['path_length']
-            self.results['a_star']['distance'] = a_result['distance']
+        for i in range(num_runs):
+            print(f"\n[INFO] 🔄 Exécution {i + 1}/{num_runs} pour le chemin {self.path_name}")
+            print("-"*50)
+            for algo in ['dijkstra', 'a_star']:
+                print(f"\n[INFO] ⚙️  Algorithme en cours : {algo.upper()}")
+                result = self._run_algorithm(start_id, end_id, algo)
+                self.results[algo]['times'].append(result['time'])
+                self.results[algo]['memory'].append(result['memory'])
+                self.results[algo]['cpu'].append(result['cpu'])
+                self.results[algo]['path_length'] = result['path_length']
+                self.results[algo]['distance'] = result['distance']
         
         # Calcul des moyennes et écarts-types
-        for algo in ['dijkstra', 'a_star']:
-            self.results[algo]['avg_time'] = np.mean(self.results[algo]['times'])
-            self.results[algo]['std_time'] = np.std(self.results[algo]['times'])
-            self.results[algo]['avg_memory'] = np.mean(self.results[algo]['memory'])
-            self.results[algo]['avg_cpu'] = np.mean(self.results[algo]['cpu'])
+        for algo in self.results:
+            self.results[algo].update({
+                'avg_time': np.mean(self.results[algo]['times']),
+                'std_time': np.std(self.results[algo]['times']),
+                'avg_memory': np.mean(self.results[algo]['memory']),
+                'avg_cpu': np.mean(self.results[algo]['cpu'])
+            })
         
         if self.generate_graphs:
-            self.generate_comparison_graphs()
+            self._generate_plots()
         
         return self.results
 
-    def generate_comparison_graphs(self):
-        """Génère des graphiques comparatifs"""
-        # Configuration du style
-        plt.style.use('default')  # Utilisation du style par défaut de matplotlib
+    def _generate_plots(self):
+        """Génère les graphiques individuels de comparaison des performances.
         
-        # Configuration des couleurs
-        colors = ['#2ecc71', '#e74c3c']  # Vert et rouge
+        Crée trois graphiques distincts :
+        - Temps d'exécution
+        - Utilisation mémoire
+        - Utilisation CPU
+        """
+        plt.style.use('default')
+        colors = ['#2ecc71', '#e74c3c']
         plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
-
-        # 1. Temps d'exécution
-        self._plot_execution_times()
         
-        # 2. Utilisation mémoire
-        self._plot_memory_usage()
+        metrics = {
+            'time': ('Temps d\'exécution moyen', 'Temps (secondes)'),
+            'memory': ('Utilisation moyenne de la mémoire', 'Mémoire (MB)'),
+            'cpu': ('Utilisation moyenne du CPU', 'CPU (%)')
+        }
         
-        # 3. Utilisation CPU
-        self._plot_cpu_usage()
+        for metric, (title, ylabel) in metrics.items():
+            plt.figure(figsize=(8, 6))
+            data = [self.results[algo][f'avg_{metric}'] for algo in ['dijkstra', 'a_star']]
+            plt.bar(['Dijkstra', 'A*'], data)
+            plt.title(f'{title} - {self.graph_name}\nChemin: {self.path_name}')
+            plt.ylabel(ylabel)
+            plt.savefig(os.path.join(self.path_output_dir, f'{self.graph_name}_{self.path_name}_{metric}.png'))
+            plt.close()
         
-        # 4. Graphique combiné
         self._plot_combined_metrics()
 
-    def _plot_execution_times(self):
-        plt.figure(figsize=(10, 6))
-        avg_times = [self.results['dijkstra']['avg_time'], self.results['a_star']['avg_time']]
-        plt.bar(['Dijkstra', 'A*'], avg_times)
-        plt.title(f'Temps d\'exécution moyen - {self.graph_name}\nChemin: {self.path_name}')
-        plt.ylabel('Temps (secondes)')
-        filename = f'{self.graph_name}_{self.path_name}_execution_times.png'
-        plt.savefig(os.path.join(self.path_output_dir, filename))
-        plt.close()
-
-    def _plot_memory_usage(self):
-        plt.figure(figsize=(8, 6))
-        memory_data = [self.results['dijkstra']['avg_memory'], self.results['a_star']['avg_memory']]
-        plt.bar(['Dijkstra', 'A*'], memory_data)
-        plt.title(f'Utilisation moyenne de la mémoire - {self.graph_name}\nChemin: {self.path_name}')
-        plt.ylabel('Mémoire (MB)')
-        filename = f'{self.graph_name}_{self.path_name}_memory_usage.png'
-        plt.savefig(os.path.join(self.path_output_dir, filename))
-        plt.close()
-
-    def _plot_cpu_usage(self):
-        plt.figure(figsize=(8, 6))
-        cpu_data = [self.results['dijkstra']['avg_cpu'], self.results['a_star']['avg_cpu']]
-        plt.bar(['Dijkstra', 'A*'], cpu_data)
-        plt.title(f'Utilisation moyenne du CPU - {self.graph_name}\nChemin: {self.path_name}')
-        plt.ylabel('CPU (%)')
-        filename = f'{self.graph_name}_{self.path_name}_cpu_usage.png'
-        plt.savefig(os.path.join(self.path_output_dir, filename))
-        plt.close()
-
     def _plot_combined_metrics(self):
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 6))
+        """Génère un graphique combiné des trois métriques de performance.
         
-        # Calcul des moyennes pour les deux algorithmes
-        dijkstra_nodes = self.results['dijkstra']['path_length']
-        astar_nodes = self.results['a_star']['path_length']
-        dijkstra_distance = self.results['dijkstra']['distance']
-        astar_distance = self.results['a_star']['distance']
+        Affiche sur une même figure :
+        - Temps d'exécution moyen
+        - Utilisation moyenne de la mémoire
+        - Utilisation moyenne du CPU
+        """
+        fig, axes = plt.subplots(1, 3, figsize=(15, 6))
+        metrics = [('time', 'Temps moyen (s)'), ('memory', 'Mémoire moyenne (MB)'), ('cpu', 'CPU moyen (%)')]
         
-        # Création du titre avec les informations supplémentaires
         title = (f'Comparaison des performances - {self.graph_name}\n'
                 f'Chemin: {self.path_name} (moyenne sur {len(self.results["dijkstra"]["times"])} exécutions)\n'
-                f'Nœuds parcourus - Dijkstra: {dijkstra_nodes}, A*: {astar_nodes}\n'
-                f'Distance totale: {dijkstra_distance:.2f} km')
+                f'Nœuds parcourus - Dijkstra: {self.results["dijkstra"]["path_length"]}, '
+                f'A*: {self.results["a_star"]["path_length"]}\n'
+                f'Distance totale: {self.results["dijkstra"]["distance"]:.2f} km')
         
         fig.suptitle(title, fontsize=10)
         
-        # Configuration des couleurs
-        colors = ['#2ecc71', '#e74c3c']  # Vert et rouge
-        
-        # Temps d'exécution (axe 1)
-        times = [self.results['dijkstra']['avg_time'], self.results['a_star']['avg_time']]
-        ax1.bar(['Dijkstra', 'A*'], times, color=colors)
-        ax1.set_ylabel('Temps moyen (s)')
-        ax1.set_title('Temps d\'exécution')
-        
-        # Mémoire (axe 2)
-        memory = [self.results['dijkstra']['avg_memory'], self.results['a_star']['avg_memory']]
-        ax2.bar(['Dijkstra', 'A*'], memory, color=colors)
-        ax2.set_ylabel('Mémoire moyenne (MB)')
-        ax2.set_title('Utilisation mémoire')
-        
-        # CPU (axe 3)
-        cpu = [self.results['dijkstra']['avg_cpu'], self.results['a_star']['avg_cpu']]
-        ax3.bar(['Dijkstra', 'A*'], cpu, color=colors)
-        ax3.set_ylabel('CPU moyen (%)')
-        ax3.set_title('Utilisation CPU')
+        for ax, (metric, ylabel) in zip(axes, metrics):
+            data = [self.results[algo][f'avg_{metric}'] for algo in ['dijkstra', 'a_star']]
+            ax.bar(['Dijkstra', 'A*'], data, color=['#2ecc71', '#e74c3c'])
+            ax.set_ylabel(ylabel)
+            ax.set_title(metric.capitalize())
         
         plt.tight_layout()
-        
-        filename = f'{self.graph_name}_{self.path_name}_combined_metrics.png'
-        plt.savefig(os.path.join(self.path_output_dir, filename))
+        plt.savefig(os.path.join(self.path_output_dir, f'{self.graph_name}_{self.path_name}_combined_metrics.png'))
         plt.close()
 
     def print_results(self):
-        """Affiche les résultats des benchmarks"""
+        """Affiche les résultats détaillés des benchmarks dans la console."""
+        print("\n" + "="*80)
+        print(f" 📊 RÉSULTATS DES BENCHMARKS - {self.graph_name.upper()} - {self.path_name.upper()}")
+        print("="*80)
+
         for algo, results in self.results.items():
-            print(f"\nRésultats pour {algo.upper()} (moyenne sur {len(results['times'])} exécutions):")
-            print(f"Temps moyen: {results['avg_time']:.4f} s (±{results['std_time']:.4f})")
-            print(f"Utilisation mémoire: {results['avg_memory']:.2f} MB")
-            print(f"Utilisation CPU: {results['avg_cpu']:.1f}%")
-            print(f"Longueur du chemin: {results['path_length']} nœuds")
-            print(f"Distance totale: {results['distance']:.2f} km")
+            print(f"\n[INFO] 🔍 Analyse de l'algorithme {algo.upper()}")
+            print("-"*50)
+            print(f"📈 Temps moyen     : {results['avg_time']:.4f} s (±{results['std_time']:.4f})")
+            print(f"💾 Mémoire         : {results['avg_memory']:.2f} MB")
+            print(f"⚡ CPU             : {results['avg_cpu']:.1f}%")
+            print(f"📏 Distance totale : {results['distance']:.2f} km")
+            print(f"🔢 Nœuds parcourus : {results['path_length']}")
 
 def main():
+    """
     # Chemins des fichiers
     nodes_file = "./../data/france/serres-sur-arget/osm_nodes.csv"
     ways_file = "./../data/france/serres-sur-arget/osm_ways.csv"
@@ -240,6 +244,7 @@ def main():
         print(f"\nProfiling pour {desc}:")
         stats = analyzer.profile_algorithm(start_id, end_id)
         stats.print_stats(10)  # Affiche les 10 fonctions les plus coûteuses
+    """
 
 if __name__ == "__main__":
     main()
