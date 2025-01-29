@@ -315,6 +315,7 @@ class BenchmarkAnalyzer:
 
 def main():
     """
+    
     # Chemins des fichiers
     nodes_file = "./../data/france/serres-sur-arget/osm_nodes.csv"
     ways_file = "./../data/france/serres-sur-arget/osm_ways.csv"

@@ -115,6 +115,8 @@ python load_csv_methods.py
 
 ## 4. Algorithme de Dijkstra (1956)
 
+Pour ce projet, le premier algorithme implémenté a été l'algorithme de Dijkstra. 
+
 ### 4.1 Présentation de l'algorithme
 Développé par Edsger Dijkstra, cet algorithme trouve le plus court chemin entre deux points dans un graphe pondéré. 
 
@@ -145,6 +147,8 @@ Vous pouvez trouvez l'implémentation de l'algorithme de Dijkstra dans le fichie
 - Réduction du graphe aux nœuds essentiels
 
 > _Note : Les deux solutions concernant l'orientation de la recherche et l'estimation de la distance sont précisément ce que propose l'algorithme A*, qui sera présenté dans la section suivante. Par extension cela permet de reduire la recherche au noeud essentiel, et donc de reduire la complexité de l'algorithme. C'est pourquoi comme prochaine approche, il serait intéressant d'implémenter l'algorithme A*._
+
+Bien que l'algorithme de Dijkstra soit moins performant dans la majorité des cas, il sera utilisé dans la partie [6. Benchmark et Analyse](#6-benchmark-et-analyse) afin de comparer ses performances avec l'algorithme A*.
 
 ## 5. Algorithme A* (1968)
 
@@ -220,6 +224,112 @@ Voici la configuration de l'environnement utilisé pour réaliser les tests :
 #### 6.2.1 Temps de chargement des fichiers CSV
 
 Pour réaliser les benchmarks, le temps de chargement des fichiers CSV a été un facteur important. La méthode utilisée initialement était le module python ```csv python```, cependant il a été remarqué que les performances étaient médiocres. En recherchant des alternatives, les modules ```pandas``` et ```polars``` ont été testés.
+
+Implémentation des méthodes de **chargement des fichiers CSV** :
+
+**Méthode initiale** de chargement des fichiers CSV utilisant le module ```csv python``` :
+```python
+class GraphCSV(Graph):
+    def load_from_csv(self, nodes_file, ways_file):
+        """Charge les données avec le module CSV standard.
+        
+        Args:
+            nodes_file (str): Chemin vers le fichier des nœuds
+            ways_file (str): Chemin vers le fichier des routes
+        """
+        start_time = time.time()
+
+        with open(nodes_file, "r", encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+
+                self.add_node(row["id"], float(row["lat"]), float(row["lon"]), row["name"])
+
+        with open(ways_file, "r", encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                self.add_edge(row["node_from"], row["node_to"], float(row["distance_km"]))
+        
+        end_time = time.time()
+        print(f"Chargement du fichier CSV avec le module python 'csv' terminé en {end_time - start_time:.2f} s.")
+```
+
+**Deuxième méthode** de chargement des fichiers CSV implémentée utilisant le module ```pandas``` :
+```python
+class GraphPandas(Graph):
+    def load_from_csv(self, nodes_file, ways_file):
+        """Charge les données avec Pandas.
+        
+        Args:
+            nodes_file (str): Chemin vers le fichier des nœuds
+            ways_file (str): Chemin vers le fichier des routes
+        """
+        start_time = time.time()
+
+        # Lecture des noeuds avec types spécifiés
+        df_nodes = pd.read_csv(nodes_file, 
+                            usecols=["id", "lat", "lon", "name"],
+                            dtype={"id": str, "lat": float, "lon": float, "name": str})
+
+        # Lecture des chemins avec types spécifiés
+        df_ways = pd.read_csv(ways_file, 
+                            usecols=["node_from", "node_to", "distance_km"],
+                            dtype={"node_from": str, "node_to": str, "distance_km": float})
+
+        # Construction du graphe - Noeuds
+        for row in df_nodes.itertuples(index=False):
+            self.add_node(row.id, row.lat, row.lon, row.name)
+
+        # Construction du graphe - Chemins
+        for row in df_ways.itertuples(index=False):
+            self.add_edge(row.node_from, row.node_to, row.distance_km)
+
+        end_time = time.time()
+        print(f"Chargement du fichier CSV avec le module 'pandas' terminé en {end_time - start_time:.2f} s.")
+```
+
+**Dernière méthode** de chargement des fichiers CSV implémentée (la plus efficace) utilisant le module ```polars``` :
+```python
+class GraphPolars(Graph):
+    def load_from_csv(self, nodes_file, ways_file):
+        """Charge les données avec Polars.
+        
+        Args:
+            nodes_file (str): Chemin vers le fichier des nœuds
+            ways_file (str): Chemin vers le fichier des routes
+        """
+        start_time = time.time()
+
+        # Lecture des noeuds avec schéma spécifié
+        df_nodes = pl.read_csv(nodes_file, 
+                             columns=["id", "lat", "lon", "name"],
+                             schema_overrides={
+                                 "id": pl.Utf8, 
+                                 "lat": pl.Float64,
+                                 "lon": pl.Float64,
+                                 "name": pl.Utf8
+                             })
+
+        # Lecture des chemins avec schéma spécifié
+        df_ways = pl.read_csv(ways_file, 
+                            columns=["node_from", "node_to", "distance_km"],
+                            schema_overrides={
+                                "node_from": pl.Utf8,
+                                "node_to": pl.Utf8,
+                                "distance_km": pl.Float64
+                            })
+
+        # Construction du graphe - Noeuds
+        for row in df_nodes.iter_rows(named=True):
+            self.add_node(row["id"], row["lat"], row["lon"], row["name"])
+
+        # Construction du graphe - Chemins
+        for row in df_ways.iter_rows(named=True):
+            self.add_edge(row["node_from"], row["node_to"], row["distance_km"])
+
+        end_time = time.time()
+        print(f"Chargement du fichier CSV avec le module 'polars' terminé en {end_time - start_time:.2f} s.")
+```
 
 Test du chargement des fichiers CSV effectué sur le jeux de données **Serres sur Arget** :
 ![Benchmark - Temps de chargement des fichiers CSV - Serres sur Arget](./projet-carte/src/benchmarks/loading_csv_methods/Serres-sur-Arget/Serres-sur-Arget_load_csv_methods_comparison.png)
@@ -300,7 +410,7 @@ class Node:
         self.nodes = {}
 ```
 
-Cette premiére structure de données est la plus simple, la plus intuitive et donc à été utilisée pour la première version du projet. Cependant elle n'est pas optimisée pour les grands graphes.
+Cette première structure de données est la plus simple, la plus intuitive et donc à été utilisée pour la première version du projet. Cependant elle n'est pas optimisée pour les grands graphes.
 
 **Avantages :**
 - Structure simple et intuitive

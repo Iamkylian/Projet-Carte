@@ -12,16 +12,23 @@ class GraphCSV(Graph):
             nodes_file (str): Chemin vers le fichier des nœuds
             ways_file (str): Chemin vers le fichier des routes
         """
+        start_time = time.time()
+
         with open(nodes_file, "r", encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
+
                 self.add_node(row["id"], float(row["lat"]), float(row["lon"]), row["name"])
 
         with open(ways_file, "r", encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 self.add_edge(row["node_from"], row["node_to"], float(row["distance_km"]))
+        
+        end_time = time.time()
+        print(f"Chargement du fichier CSV avec le module python 'csv' terminé en {end_time - start_time:.2f} s.")
                 
+
 
 class GraphPandas(Graph):
     def load_from_csv(self, nodes_file, ways_file):
@@ -52,7 +59,7 @@ class GraphPandas(Graph):
             self.add_edge(row.node_from, row.node_to, row.distance_km)
 
         end_time = time.time()
-        print(f"Chargement terminé en {end_time - start_time:.2f} s.")
+        print(f"Chargement du fichier CSV avec le module 'pandas' terminé en {end_time - start_time:.2f} s.")
 
 
 class GraphPolars(Graph):
@@ -93,7 +100,7 @@ class GraphPolars(Graph):
             self.add_edge(row["node_from"], row["node_to"], row["distance_km"])
 
         end_time = time.time()
-        print(f"Chargement terminé en {end_time - start_time:.2f} s.")
+        print(f"Chargement du fichier CSV avec le module 'polars' terminé en {end_time - start_time:.2f} s.")
 
 
 def test_load_csv_methods(data_name, nodes_file, ways_file):
