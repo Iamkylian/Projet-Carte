@@ -72,32 +72,27 @@ class GraphPolars(Graph):
         """
         start_time = time.time()
 
-        # Lecture des noeuds avec schéma spécifié
-        df_nodes = pl.read_csv(nodes_file, 
-                             columns=["id", "lat", "lon", "name"],
-                             schema_overrides={
-                                 "id": pl.Utf8, 
-                                 "lat": pl.Float64,
-                                 "lon": pl.Float64,
-                                 "name": pl.Utf8
-                             })
+        # Load nodes with Polars
+        nodes_df = pl.read_csv(nodes_file)
+        for row in nodes_df.iter_rows():
+            # Check for null values
+            node_id = str(row[0]) if row[0] is not None else None
+            lat = float(row[3]) if row[3] is not None else 0.0
+            lon = float(row[2]) if row[2] is not None else 0.0
+            name = str(row[1]) if row[1] is not None else ""
+            
+            if node_id is not None:
+                self.add_node(node_id, lat, lon, name)
 
-        # Lecture des chemins avec schéma spécifié
-        df_ways = pl.read_csv(ways_file, 
-                            columns=["node_from", "node_to", "distance_km"],
-                            schema_overrides={
-                                "node_from": pl.Utf8,
-                                "node_to": pl.Utf8,
-                                "distance_km": pl.Float64
-                            })
-
-        # Construction du graphe - Noeuds
-        for row in df_nodes.iter_rows(named=True):
-            self.add_node(row["id"], row["lat"], row["lon"], row["name"])
-
-        # Construction du graphe - Chemins
-        for row in df_ways.iter_rows(named=True):
-            self.add_edge(row["node_from"], row["node_to"], row["distance_km"])
+        # Load ways with Polars
+        ways_df = pl.read_csv(ways_file)
+        for row in ways_df.iter_rows():
+            node1 = str(row[2]) if row[2] is not None else None
+            node2 = str(row[3]) if row[3] is not None else None
+            distance = float(row[6]) if row[6] is not None else 0.0
+            
+            if node1 is not None and node2 is not None:
+                self.add_edge(node1, node2, distance)
 
         end_time = time.time()
         print(f"Chargement du fichier CSV avec le module 'polars' terminé en {end_time - start_time:.2f} s.")

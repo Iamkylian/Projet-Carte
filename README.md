@@ -254,7 +254,7 @@ class GraphCSV(Graph):
         print(f"Chargement du fichier CSV avec le module python 'csv' terminé en {end_time - start_time:.2f} s.")
 ```
 
-**Deuxième méthode** de chargement des fichiers CSV implémentée utilisant le module ```pandas``` :
+**Deuxième méthode** de chargement des fichiers CSV implémentée utilisant le module ```pandas``` : 
 ```python
 class GraphPandas(Graph):
     def load_from_csv(self, nodes_file, ways_file):
