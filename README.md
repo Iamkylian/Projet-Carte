@@ -29,7 +29,7 @@
       - [6.2.1 Temps de chargement des fichiers CSV](#621-temps-de-chargement-des-fichiers-csv)
       - [6.2.2 Jeux de données : Serres sur Arget](#622-jeux-de-données--serres-sur-arget)
       - [6.2.3 Jeux de données : Ariège](#623-jeux-de-données--ariège)
-    - [6.3 Analyse de la complexité](#63-analyse-de-la-complexité)
+    - [6.3 Analyse et Comparaison de la complexité](#63-analyse-et-comparaison-de-la-complexité)
       - [6.3.1 Structure de données](#631-structure-de-données)
       - [6.3.2 Complexité algorithmique](#632-complexité-algorithmique)
       - [6.3.3 Complexité spatiale](#633-complexité-spatiale)
@@ -139,7 +139,7 @@ Vous pouvez trouvez l'implémentation de l'algorithme de Dijkstra dans le fichie
 - Stockage redondant des arêtes bidirectionnelles
 
 ### 4.4 Solutions proposées
-- Restructurer le graphe pour un accès O(1) aux voisins (voir section [Structure de données](#structure-de-données))
+- Restructurer le graphe pour un accès O(1) aux voisins (voir section [6.3.1 Structure de données](#631-structure-de-données))
 - Orienter la recherche vers la destination pour éviter l'exploration inutile de nœuds
 - Utiliser une estimation de la distance restante pour prioriser les nœuds prometteurs
 - Réduction du graphe aux nœuds essentiels
@@ -160,9 +160,9 @@ Développé par Peter Hart, Nils Nilsson et Bertram Raphael, A* est une extensio
 >> Une heuristique est une estimation de la distance restante pour atteindre la destination. Elle est utilisée pour accélérer la recherche.
 >> Dans le contexte de A*, l'heuristique (comme la distance à vol d'oiseau) permet d'orienter la recherche vers la destination en estimant la distance restante, même si cette estimation n'est pas exacte, elle doit être optimiste (ne jamais surestimer la distance réelle).
 
-- Utilise une fonction f(n) = g(n) + h(n)
-  - g(n) : coût réel depuis le départ
-  - h(n) : estimation heuristique jusqu'à l'arrivée
+- Utilise une fonction **f(n) = g(n) + h(n)**
+  - **g(n)** : coût réel depuis le départ
+  - **h(n)** : estimation heuristique jusqu'à l'arrivée
 - Guide la recherche vers la destination
 
 **Différences clés avec Dijkstra :**
@@ -196,18 +196,18 @@ Ces solutions ne seront pas implémentées dans le cadre de ce projet, mais elle
 ## 6. Benchmark et Analyse
 
 Les benchmarks ont été réalisés sur différents jeux de données :
-1. Serres sur Arget : dans ```data/france/serres-sur-arget/```
-2. Ariège : dans ```data/france/ariege/```
+1. **Serres sur Arget** : dans ```data/france/serres-sur-arget/```
+2. **Ariège** : dans ```data/france/ariege/```
 
 Voir ```graph_data.py``` pour plus de détails sur la structure des dossiers et fichiers de données.
 
 Différents types de métriques seront mesurés :
-- Temps d'exécution
-- Utilisation de la mémoire
-- Utilisation du CPU (en %)
-- Nombre de nœuds visités
-- La distance parcourue
-- Le nombre d'éxecutions : utilisé afin d'obtenir la moyenne des résultats des métriques pour des résultats plus pertinents.
+- **Temps d'exécution** : temps de recherche de chemin
+- **Utilisation de la mémoire**
+- **Utilisation du CPU (en %)**
+- **Nombre de nœuds visités**
+- **La distance parcourue**
+- **Le nombre d'éxecutions** : utilisé afin d'obtenir la moyenne des résultats des métriques pour des résultats plus pertinents.
 
 ### 6.1 Environnement de test
 
@@ -243,7 +243,11 @@ Pour la suite du projet, il a été choisi d'utiliser **Polars** qui démontre l
 
 #### 6.2.2 Jeux de données : Serres sur Arget
 
-Ensuite des benchmarks ont été réalisés pour les algorithmes de Dijkstra et A* afin de mesurer les métriques mentionner précédemment dans la partie [6. Benchmark et Analyse](#6-benchmark-et-analyse).
+Ensuite des benchmarks ont été réalisés pour les algorithmes de Dijkstra et A* afin de mesurer les métriques mentionner précédemment dans la partie [6. Benchmark et Analyse](#6-benchmark-et-analyse). Vous pouvez regénérer tous les graphiques des jeux de données, comme indiqué dans la partie [3.2 Lancer les benchmarks de recherche de chemin](#32-lancer-les-benchmarks-de-recherche-de-chemin), en éxecutant la commande :
+
+```bash
+python benchmark_paths.py
+```
 
 Résultat des benchmarks, pour le chemin du node **Saint-Pierre-de-Rivière (469819297)** au node **Saint-Pierre-de-Rivière (469819297)**.
 ![Benchmark Serres sur Arget - chemin 469819297 -> 469819297](./projet-carte/src/benchmarks/Serres-sur-Arget/from_469819297_to_469819297/Serres-sur-Arget_from_469819297_to_469819297_combined_metrics.png)
@@ -260,10 +264,11 @@ Résultat des benchmarks, pour le chemin du node **Saint-Pierre-de-Rivière (469
 Résultat des benchmarks, pour le chemin du node **Saint-Pierre-de-Rivière (469819297)** au node **Cabane Coumauzil - barguillere (1205464576)**.
 ![Benchmark Serres sur Arget - chemin 469819297 -> 1205464576](./projet-carte/src/benchmarks/Serres-sur-Arget/from_469819297_to_1205464576/Serres-sur-Arget_from_469819297_to_1205464576_combined_metrics.png)
 
-> _Note : Ce benchmark du chemin de Saint-Pierre-de-Rivière à Cabane Coumauzil - barguillere est le plus long des 4 chemins tester. Cependant en raison de probléme de données dans le jeu de données Ariège, il n'a pas été possible de réaliser ce benchmark pour le chemin de Saint-Pierre-de-Rivière à Grotte Bernard dans la partie suivante : [6.2.3 Jeux de données : Ariège](#623-jeux-de-données-ariège)._
+> _Note : Ce benchmark du chemin de Saint-Pierre-de-Rivière à Cabane Coumauzil - barguillere est le plus long des 4 chemins tester. Cependant en raison de probléme de données dans le jeu de données Ariège, il n'a pas été possible de réaliser ce benchmark pour le chemin de Saint-Pierre-de-Rivière à Grotte Bernard dans la partie suivante : [6.2.3 Jeux de données : Ariège](#623-jeux-de-données--ariège)._
 
-On peut constater que les performances de l'algorithme A* sont nettement supérieures à celles de l'algorithme de Dijkstra dans la plupart des cas. Cependant, il est intéressant de noter que l'algorithme de Dijkstra se montre plus performant pour le chemin le plus court : ```469819297 (Saint-Pierre-de-Rivière) -> 469819297 (Saint-Pierre-de-Rivière)```. Bien que la cause exacte de ce comportement n'ait pas pu être approfondie par manque de temps, cela pourrait s'expliquer par le surcoût initial de calcul de l'heuristique dans A*. Pour les chemins plus longs, l'algorithme A* démontre une meilleure efficacité en termes d'utilisation de la mémoire, mais nécessite en contrepartie plus de ressources CPU pour le calcul de l'heuristique.
-L'algorithme A* est donc plus performant pour les chemins plus longs, on peut le constater dans le benchmark pour le chemin de Saint-Pierre-de-Rivière à Cabane Coumauzil - barguillere.
+On peut constater que les performances de l'algorithme **A*** sont **nettement supérieures** à celles de l'algorithme de **Dijkstra** dans la plupart des cas. Cependant, il est intéressant de noter que l'algorithme de **Dijkstra** se montre plus **performant** pour le **chemin le plus court** : ```469819297 (Saint-Pierre-de-Rivière) -> 469819297 (Saint-Pierre-de-Rivière)```. 
+Bien que la cause exacte de ce comportement n'ait pas pu être approfondie par manque de temps, cela pourrait s'expliquer par le **surcoût initial** de calcul de l'**heuristique** dans **A***. Pour les chemins plus longs, l'algorithme **A*** démontre une **meilleure efficacité** en termes d'**utilisation de la mémoire**, mais nécessite en contrepartie plus de ressources **CPU** pour le calcul de l'**heuristique**. On peut remarquer que le pourcentage du **CPU** utilisé par l'algorithme **A*** diminue lorsque le chemin devient plus long.
+L'algorithme **A*** est donc plus **performant** pour les **chemins plus longs**, on peut le constater dans le benchmark pour le chemin de Saint-Pierre-de-Rivière à Cabane Coumauzil - barguillere.
 
 #### 6.2.3 Jeux de données : Ariège
 
@@ -276,13 +281,16 @@ Résultat des benchmarks, pour le chemin du node **Saint-Pierre-de-Rivière (469
 Résultat des benchmarks, pour le chemin du node **Saint-Pierre-de-Rivière (469819297)** au node **Grotte Bernard (8490363670)**.
 ![Benchmark Ariège - chemin 469819297 -> 1792742726](./projet-carte/src/benchmarks/Ariège/from_469819297_to_8490363670/Ariège_from_469819297_to_8490363670_combined_metrics.png)
 
-Même observation concernant les performances de l'algorithme A* par rapport à l'algorithme de Dijkstra en termes de temps de recherche. L'algorithme A* est plus performant pour les chemins plus longs. Il consomme également plus de CPU pour les chemins les plus longs avec très peu de différence entre les deux algorithmes. Cette différence de performance s'explique par l'utilisation de l'heuristique qui permet à A* de mieux cibler la recherche du chemin optimal.
+Même observation concernant les performances de l'algorithme **A*** par rapport à l'algorithme de **Dijkstra** en termes de **temps de recherche**. L'algorithme **A*** est **plus performant** pour les chemins plus longs contrairement a **Dijkstra**. 
+Etonnament l'algorithme **A*** ne consomme pas de **mémoire** ou alors trés peu, rendant impossible de mesurer la mémoire utilisée par l'algorithme. Il consomme également le plus de **CPU** pour les chemins les plus longs avec très peu de différence entre les deux algorithmes. Cette différence de **performance** s'explique par l'utilisation de l'**heuristique** qui permet à **A*** de mieux cibler la recherche du chemin optimal.
 
-### 6.3 Analyse de la complexité
+Certaines **"erreurs"** observées ou **graphiques incohérents** dans les **benchmarks** pourraient être évitées en executant les benchmarks avec un **nombre d'exécutions** plus important, afin de pouvoir obtenir des résultats plus **fiables** pour la comparaison des algorithmes.
+
+### 6.3 Analyse et Comparaison de la complexité
 
 #### 6.3.1 Structure de données
 
-Deux approches ont été envisagées pour la structure de données du graphe :
+Deux approches ont été envisagées pour la structure de données du graphe, dans laquelle les données sont stockées :
 
 1. **Structure initiale (Basique) :**
 
@@ -430,7 +438,7 @@ Bien que la complexité spatiale théorique soit **O(V)** pour les deux algorith
 - Des structures de données plus compactes
 - Une meilleure efficacité dans l'utilisation de l'espace
 
-La notation Big O masque ces différences pratiques importantes, ce qui explique pourquoi elle semble identique alors que l'utilisation réelle de la mémoire est très différente (voir [6.2.2 Jeux de données : Serres sur Arget](#622-jeux-de-données-serres-sur-arget) ou [6.2.3 Jeux de données : Ariège](#623-jeux-de-données-ariège)).
+La notation Big O masque ces différences pratiques importantes, ce qui explique pourquoi elle semble identique alors que l'utilisation réelle de la mémoire est très différente (voir [6.2.2 Jeux de données : Serres sur Arget](#622-jeux-de-données--serres-sur-arget) ou [6.2.3 Jeux de données : Ariège](#623-jeux-de-données--ariège)).
 
 #### 6.3.4 Complexité temporelle
 
@@ -447,15 +455,15 @@ Cependant, dans la pratique :
 
 Basé sur les benchmarks réalisés :
 
-**Pour le jeu de données Serres sur Arget - chemin de Saint-Pierre-de-Rivière à Grotte Bernard (voir [6.2.2 Jeux de données : Serres sur Arget](#622-jeux-de-données-serres-sur-arget)) :**
-- **Dijkstra** : **0.5259 secondes (±0.0296)** en moyenne
-- **A\*** : **0.015 secondes (±0.0015)** en moyenne
-- Gain de performance A* vs Dijkstra :  ~97,15% - Donc **A\*** est environ **35,06 fois plus rapide** que **Dijkstra**
+**Pour le jeu de données Serres sur Arget - chemin de Saint-Pierre-de-Rivière à Grotte Bernard (voir [6.2.2 Jeux de données : Serres sur Arget](#622-jeux-de-données--serres-sur-arget)) :**
+- **Dijkstra** : **0.6341 secondes (±0.0256)** en moyenne
+- **A\*** : **0.0236 secondes (±0.0013)** en moyenne
+- Gain de performance A* vs Dijkstra :  ~96.27% - Donc **A\*** est environ **26.87 fois plus rapide** que **Dijkstra**
 
-**Pour le jeu de données Ariège - chemin de Saint-Pierre-de-Rivière à Grotte Bernard (voir [6.2.3 Jeux de données : Ariège](#623-jeux-de-données-ariège)) :**
-- **Dijkstra** : **0.7382 secondes (±0.0928)** en moyenne
-- **A\*** : **0.0217 secondes (±0.0030)** en moyenne
-- Gain de performance A* vs Dijkstra : ~97,06% - Donc **A\*** est environ **34,02 fois plus rapide** que **Dijkstra**
+**Pour le jeu de données Ariège - chemin de Saint-Pierre-de-Rivière à Grotte Bernard (voir [6.2.3 Jeux de données : Ariège](#623-jeux-de-données--ariège)) :**
+- **Dijkstra** : **0.6489 secondes (±0.0308)** en moyenne
+- **A\*** : **0.0216 secondes (±0.0012)** en moyenne
+- Gain de performance A* vs Dijkstra : ~96,67% - Donc **A\*** est environ **30,04 fois plus rapide** que **Dijkstra**
 
 Dans la pratique A* est bien plus rapide et efficace que Dijkstra.
 

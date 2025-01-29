@@ -197,9 +197,25 @@ class BenchmarkAnalyzer:
         
         for ax, (metric, ylabel) in zip(axes, metrics):
             data = [self.results[algo][f'avg_{metric}'] for algo in ['dijkstra', 'a_star']]
-            ax.bar(['Dijkstra', 'A*'], data, color=['#2ecc71', '#e74c3c'])
+            bars = ax.bar(['Dijkstra', 'A*'], data, color=['#2ecc71', '#e74c3c'])
             ax.set_ylabel(ylabel)
             ax.set_title(metric.capitalize())
+            
+            # Ajout des valeurs au-dessus des barres
+            for bar, value in zip(bars, data):
+                height = bar.get_height()
+                if metric == 'time':
+                    ax.text(bar.get_x() + bar.get_width()/2., height,
+                           f'{value:.4f}s',
+                           ha='center', va='bottom')
+                elif metric == 'memory':
+                    ax.text(bar.get_x() + bar.get_width()/2., height,
+                           f'{value:.2f}MB',
+                           ha='center', va='bottom')
+                else:  # cpu
+                    ax.text(bar.get_x() + bar.get_width()/2., height,
+                           f'{value:.1f}%',
+                           ha='center', va='bottom')
         
         plt.tight_layout()
         plt.savefig(os.path.join(self.path_output_dir, f'{self.graph_name}_{self.path_name}_combined_metrics.png'))
