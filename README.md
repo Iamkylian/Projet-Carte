@@ -20,7 +20,7 @@
     - [4.4 Solutions proposées](#44-solutions-proposées)
   - [5. Algorithme A\* (1968)](#5-algorithme-a-1968)
     - [5.1 Présentation de l'algorithme](#51-présentation-de-lalgorithme)
-    - [4.2 Implémentation](#42-implémentation-1)
+    - [5.2 Implémentation](#52-implémentation)
     - [5.3 Problèmes identifiés](#53-problèmes-identifiés)
     - [5.4 Solutions proposées](#54-solutions-proposées)
   - [6. Benchmark et Analyse](#6-benchmark-et-analyse)
@@ -33,7 +33,7 @@
       - [6.3.1 Structure de données](#631-structure-de-données)
       - [6.3.2 Complexité algorithmique](#632-complexité-algorithmique)
       - [6.3.3 Complexité spatiale](#633-complexité-spatiale)
-      - [6.3.4 Complexité temporelle en pratique](#634-complexité-temporelle-en-pratique)
+      - [6.3.4 Complexité temporelle](#634-complexité-temporelle)
       - [6.3.5 Complexité cyclomatique](#635-complexité-cyclomatique)
   - [7. Perspectives d'amélioration](#7-perspectives-damélioration)
   - [8. Conclusion](#8-conclusion)
@@ -176,7 +176,7 @@ Développé par Peter Hart, Nils Nilsson et Bertram Raphael, A* est une extensio
    - Les deux garantissent le chemin optimal
    - A* nécessite une heuristique admissible (qui ne surestime jamais)
 
-### 4.2 Implémentation
+### 5.2 Implémentation
 
 Vous pouvez trouvez l'implémentation de l'algorithme de A* dans le fichier [```graph.py```](./projet-carte/src/graph.py).
 
@@ -212,7 +212,7 @@ Différents types de métriques seront mesurés :
 ### 6.1 Environnement de test
 
 Voici la configuration de l'environnement utilisé pour réaliser les tests :
-- Test effectué sur un pc portable MSI GL76 - 40GB RAM - 11th Gen Intel(R) Core(TM) i5-11400H
+- Test effectué sur un pc portable **MSI GL76 - 40GB RAM - 11th Gen Intel(R) Core(TM) i5-11400H**
 - Version de Python : 3.13.1
 
 ### 6.2 Resultat comparatif
@@ -300,9 +300,9 @@ Cette premiére structure de données est la plus simple, la plus intuitive et d
 
 **Inconvénients :**
 - Recherche des voisins en O(E) où E est le nombre d'arêtes
-- Redondance des données pour les arêtes bidirectionnelles
-- Consommation mémoire plus importante
-- Performance dégradée pour les grands graphes
+- **Redondance** des données pour les arêtes bidirectionnelles
+- **Consommation mémoire** plus importante
+- Performance **dégradée** pour les grands graphes
 
 Cette structure de données est donc à éviter pour les grands graphes. C'est pourquoi une seconde structure de données, plus optimisée, a été implémentée.
 
@@ -343,14 +343,14 @@ class Graph:
 Cette nouvelle structure de données est plus optimisée pour les grands graphes et permet notamment d'accéder aux nœuds et aux voisins de chaque nœud en O(1).
 
 **Avantages :**
-- Accès O(1) aux nœuds via dictionnaire
-- Accès O(1) aux voisins de chaque nœud 
-- Réduction de la redondance des données
-- Optimisation de la mémoire
+- Accès **O(1)** aux nœuds via **dictionnaire**
+- Accès **O(1)** aux voisins de chaque nœud 
+- **Réduction** de la redondance des données
+- **Optimisation** de la mémoire
 
 **Inconvénients :**
-- Structure plus complexe à maintenir
-- Mise à jour des références bidirectionnelles
+- Structure plus **complexe** à maintenir
+- Mise à jour des références **bidirectionnelles**
 
 ---
 
@@ -358,11 +358,11 @@ Cette nouvelle structure de données est plus optimisée pour les grands graphes
 
 | Opération | Structure Basique | Structure Optimisée |
 |-----------|-------------------|------------------|
-| Accès à un nœud | O(V) | O(1) |
-| Accès aux voisins | O(E) | O(1) |
-| Ajout d'un nœud | O(1) | O(1) |
-| Ajout d'une arête | O(1) | O(1) |
-| Mémoire utilisée | O(V + 2E) | O(V + E) |
+| Accès à un nœud | **O(V)** | **O(1)** |
+| Accès aux voisins | **O(E)** | **O(1)** |
+| Ajout d'un nœud | **O(1)** | **O(1)** |
+| Ajout d'une arête | **O(1)** | **O(1)** |
+| Mémoire utilisée | **O(V + 2E)** | **O(V + E)** |
 
 Où V = nombre de nœuds, E = nombre d'arêtes
 
@@ -371,68 +371,112 @@ La structure optimisée actuelle a été choisie car elle offre :
 - Une meilleure gestion de la mémoire
 - Une adaptation parfaite aux algorithmes Dijkstra et A*
 - Une réduction significative de la complexité temporelle des opérations critiques
-Cette structure s'est révélée particulièrement efficace lors des tests de performance, notamment pour les grands jeux de données comme celui de l'Ariège.
+
+Cette structure s'est révélée particulièrement efficace lors des tests de performance, notamment pour les grands jeux de données comme celui de l'**Ariège**.
 
 #### 6.3.2 Complexité algorithmique
 
 | Algorithme | Complexité dans le pire cas | Description |
 |------------|----------------------------|-------------|
-| Dijkstra   | O((V + E) log V)          | V = nombre de nœuds, E = nombre d'arêtes |
-| A*         | O((V + E) log V)          | Même complexité théorique que Dijkstra. Cependant, plus rapide dans la plupart des cas. |
+| Dijkstra   | **O((V + E) log V)**          | V = nombre de nœuds, E = nombre d'arêtes |
+| A*         | **O((V + E) log V)**          | Même complexité théorique que Dijkstra. Cependant, plus rapide dans la plupart des cas. |
 
 **Détails de l'implémentation :**
 
-Pour Dijkstra :
-- Utilisation d'un tas binaire (heapq) pour la file de priorité
-- Extraction du minimum : O(log V)
-- Pour chaque nœud, exploration des voisins : O(E)
-- Mise à jour des distances : O(log V) par arête
+**Dijkstra**
 
-Pour A* :
-- Structure similaire à Dijkstra avec ajout de l'heuristique
-- Calcul de l'heuristique (distance de Haversine) : O(1) par nœud
-- Optimisation de l'exploration grâce à la fonction f(n) = g(n) + h(n)
-  - g(n) : coût réel depuis le départ
-  - h(n) : estimation heuristique (distance à vol d'oiseau)
+- Utilisation d'un tas binaire (heapq) pour la file de priorité
+- Extraction du minimum : **O(log V)**
+- Pour chaque nœud, exploration des voisins : **O(E)**
+- Mise à jour des distances : **O(log V)** par arête
+
+**A\***
+
+- Structure similaire à **Dijkstra** avec ajout de l'**heuristique**
+- Calcul de l'**heuristique** (distance de Haversine) : **O(1)** par nœud
+- Optimisation de l'exploration grâce à la fonction **f(n) = g(n) + h(n)**
+  - **g(n)** : coût réel depuis le départ
+  - **h(n)** : estimation heuristique (distance à vol d'oiseau)
 
 #### 6.3.3 Complexité spatiale
 
 | Algorithme | Mémoire utilisée | Structures de données |
 |------------|------------------|----------------------|
-| Dijkstra   | O(V + E)        | - distances[node_id] : O(V)<br>- predecessors[node_id] : O(V)<br>- priority_queue : O(V)<br>- graph : O(E) |
-| A*         | O(V + E)        | - g_scores[node_id] : O(V)<br>- f_scores[node_id] : O(V)<br>- came_from[node_id] : O(V)<br>- open_set : O(V)<br>- graph : O(E) |
+| Dijkstra   | **O(V + E)**        | - ```distances[node_id]``` : **O(V)**<br>- ```predecessors[node_id]``` : **O(V)**<br>- ```priority_queue``` : **O(V)**<br>- ```graph``` : **O(E)** |
+| A*         | **O(V + E)**        | - ```g_scores[node_id]``` : **O(V)**<br>- ```f_scores[node_id]``` : **O(V)**<br>- ```came_from[node_id]``` : **O(V)**<br>- ```open_set``` : **O(V)**<br>- ```graph``` : **O(E)** |
+
+> _Note : La complexité spatiale est la même pour les deux algorithmes car les structures de données sont identiques._
+
+**Dijkstra :**
+
+- Explore systématiquement tous les nœuds atteignables
+- Remplit progressivement ses structures jusqu'à **O(V)**
+- Utilise l'espace de manière uniforme
+
+**A\***
+
+- Explore préférentiellement les nœuds prometteurs
+- Structures potentiellement plus petites en pratique
+- L'heuristique réduit l'espace effectif exploré
 
 **Optimisations mémoire implémentées :**
-- Utilisation de dictionnaires pour un accès O(1) aux scores
-- Structure de graphe optimisée avec adjacency list
+- Utilisation de dictionnaires (voir [6.3.1 Structure de données](#631-structure-de-données)) pour un accès **O(1)** aux scores
+- Structure de graphe optimisée avec ```neighbors``` (voir [6.3.1 Structure de données](#631-structure-de-données))
 - Nettoyage des structures temporaires après utilisation
 
-#### 6.3.4 Complexité temporelle en pratique
+Bien que la complexité spatiale théorique soit **O(V)** pour les deux algorithmes, A* utilise généralement significativement moins de mémoire en pratique grâce à :
 
-Basé sur nos benchmarks :
+- L'exploration guidée qui réduit le nombre de nœuds visités
+- Des structures de données plus compactes
+- Une meilleure efficacité dans l'utilisation de l'espace
 
-**Pour le jeu de données Serres sur Arget :**
-- Dijkstra : ~0.15s en moyenne
-- A* : ~0.08s en moyenne
-- Gain de performance A* vs Dijkstra : ~45%
+La notation Big O masque ces différences pratiques importantes, ce qui explique pourquoi elle semble identique alors que l'utilisation réelle de la mémoire est très différente (voir [6.2.2 Jeux de données : Serres sur Arget](#622-jeux-de-données-serres-sur-arget) ou [6.2.3 Jeux de données : Ariège](#623-jeux-de-données-ariège)).
 
-**Pour le jeu de données Ariège :**
-- Dijkstra : ~0.45s en moyenne
-- A* : ~0.25s en moyenne
-- Gain de performance A* vs Dijkstra : ~44%
+#### 6.3.4 Complexité temporelle
+
+| Algorithme | Complexité temporelle (pire cas) |
+|------------|---------------------|
+| Dijkstra   | **O(V log V + E log V)** |
+| A*         | **O(V log V + E log V)** |
+
+Cependant, dans la pratique :
+
+- A* visite généralement beaucoup moins de nœuds que Dijkstra grâce à son **heuristique**
+- Le facteur de branchement effectif est réduit par l'**heuristique** qui guide la recherche
+- Les performances réelles d'**A\*** sont bien meilleures, comme le montrent les benchmarks (97% plus rapide)
+
+Basé sur les benchmarks réalisés :
+
+**Pour le jeu de données Serres sur Arget - chemin de Saint-Pierre-de-Rivière à Grotte Bernard (voir [6.2.2 Jeux de données : Serres sur Arget](#622-jeux-de-données-serres-sur-arget)) :**
+- **Dijkstra** : **0.5259 secondes (±0.0296)** en moyenne
+- **A\*** : **0.015 secondes (±0.0015)** en moyenne
+- Gain de performance A* vs Dijkstra :  ~97,15% - Donc **A\*** est environ **35,06 fois plus rapide** que **Dijkstra**
+
+**Pour le jeu de données Ariège - chemin de Saint-Pierre-de-Rivière à Grotte Bernard (voir [6.2.3 Jeux de données : Ariège](#623-jeux-de-données-ariège)) :**
+- **Dijkstra** : **0.7382 secondes (±0.0928)** en moyenne
+- **A\*** : **0.0217 secondes (±0.0030)** en moyenne
+- Gain de performance A* vs Dijkstra : ~97,06% - Donc **A\*** est environ **34,02 fois plus rapide** que **Dijkstra**
+
+Dans la pratique A* est bien plus rapide et efficace que Dijkstra.
 
 #### 6.3.5 Complexité cyclomatique
 
 | Algorithme | Complexité | Points clés |
 |------------|------------|-------------|
-| Dijkstra   | 7         | - Boucle principale<br>- Condition d'arrêt<br>- Mise à jour des distances<br>- Gestion des voisins |
-| A*         | 9         | - Boucle principale<br>- Conditions d'arrêt<br>- Calcul f_score<br>- Mise à jour des scores<br>- Reconstruction du chemin |
+| Dijkstra   | **7**         | - Boucle while principale<br>- Condition d'arrêt (current == end_id)<br>- Vérification des distances<br>- Itération sur les voisins<br>- Conditions de mise à jour |
+| A*         | **9**         | - Boucle while principale<br>- Condition d'arrêt (current == end_id)<br>- Itération sur les voisins<br>- Calcul et comparaison des scores g et f<br>- Reconstruction du chemin |
 
-**Facteurs impactant la complexité :**
-- Nombre de conditions de contrôle
-- Imbrication des boucles
-- Gestion des cas particuliers
-- Validation des données
+**Détails de la complexité cyclomatique :**
+
+Pour **Dijkstra** :
+- Nombre de chemins indépendants : 7
+- Points de complexité principaux liés à la structure de contrôle du flux d'exécution
+- La complexité est principalement due aux conditions de mise à jour des distances et à la gestion des voisins
+
+Pour **A\*** :
+- Nombre de chemins indépendants : 9  
+- Complexité accrue par rapport à Dijkstra due aux calculs supplémentaires des scores
+- Points critiques dans la reconstruction du chemin et la gestion des scores g et f
 
 ## 7. Perspectives d'amélioration
 
@@ -440,7 +484,7 @@ Afin d'améliorer le systéme de recherche de chemin, il serait pertinent d'envi
 - Implémentation de Contraction Hierarchies (autre algorithme de recherche de chemin)
 - Optimisation des structures de données si possible
 - Amélioration de l'heuristique A*
-- Support multi-threading
+- Support multi-threading (pour accélérer les calculs et réaliser des calculs en parallèle)
 
 ## 8. Conclusion
 
@@ -448,5 +492,3 @@ Le projet a permis d'implémenter et de comparer différentes approches de calcu
 - L'optimisation des structures de données
 - L'amélioration de l'heuristique A*
 
-
-Stockage de tous les node -> puis 
