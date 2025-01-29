@@ -5,7 +5,7 @@ import io
 import time  # Ajout de l'import time
 
 def main():
-    """Main entry point of the program."""
+    """[OLD] Point d'entrée du programme."""
     # Définition des chemins de fichiers dans un dictionnaire
     graph_data = [
         {

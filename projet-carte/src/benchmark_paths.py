@@ -1,10 +1,12 @@
 from benchmark import BenchmarkAnalyzer
 from graph_data import GRAPH_DATA
-import os
 
 def run_benchmarks(generate_graphs=True):
     """
     Exécute les benchmarks pour tous les jeux de données définis dans GRAPH_DATA
+    
+    Args:
+        generate_graphs (bool): Indique si les graphiques doivent être générés
     """
     print("\nDémarrage des benchmarks...")
     
@@ -25,7 +27,7 @@ def run_benchmarks(generate_graphs=True):
                 data['points']['start'],
                 end_point,
                 path_name=path_name,
-                num_runs=5
+                num_runs=10
             )
             analyzer.print_results()
 

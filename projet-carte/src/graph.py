@@ -2,25 +2,37 @@ import math
 import polars as pl
 
 class Node:
+    """Classe représentant un nœud dans le graphe.
+    
+    Cette classe stocke les informations d'un point géographique
+    et ses connexions avec d'autres nœuds.
+    
+    Attributs:
+        id (str): Identifiant unique du nœud
+        lat (float): Latitude du point
+        lon (float): Longitude du point 
+        name (str): Nom du lieu
+        neighbors (dict): Dictionnaire des voisins {id_noeud: distance}
+    """
     def __init__(self, id, lat, lon, name):
         self.id = id
-        self.lat = lon
+        self.lat = lon  # Inversion lat/lon pour correspondre au format OSM
         self.lon = lat
         self.name = name
-        self.neighbors = {}  # {node_id: distance}
+        self.neighbors = {}  # Stockage des voisins avec leur distance
 
 class Graph:
-    """Class representing a graph for path calculations.
+    """Classe représentant un graphe pour les calculs d'itinéraires.
     
-    This class allows building and manipulating a graph from OSM data
-    to calculate distances and shortest paths.
+    Cette classe permet de construire et manipuler un graphe à partir de données OSM
+    pour calculer des distances et des plus courts chemins.
     
-    Attributes:
-        nodes (dict): Dictionary of nodes with their coordinates {id: Node}
+    Attributs:
+        nodes (dict): Dictionnaire des nœuds avec leurs coordonnées {id: Node}
     """
     
     def __init__(self):
-        """Initialize a new empty graph."""
+        """Initialise un nouveau graphe vide."""
         self.nodes = {}  # {id: Node}
         
     def add_node(self, id, lat, lon, name):
@@ -32,11 +44,11 @@ class Graph:
             self.nodes[id2].neighbors[id1] = distance  # Pour les routes bidirectionnelles
 
     def load_from_csv(self, nodes_file, ways_file):
-        """Load the graph from CSV files using Polars.
+        """ Charge le graphe à partir des fichiers CSV.
         
         Args:
-            nodes_file (str): Path to the nodes CSV file
-            ways_file (str): Path to the ways CSV file
+            nodes_file (str): Chemin vers le fichier des nœuds
+            ways_file (str): Chemin vers le fichier des routes
         """
         
         # Load nodes with Polars
@@ -62,14 +74,14 @@ class Graph:
                 self.add_edge(node1, node2, distance)
 
     def dijkstra(self, start_id, end_id):
-        """Find the shortest path between two points using Dijkstra's algorithm.
+        """Trouve le plus court chemin entre deux points avec l'algorithme de Dijkstra.
         
         Args:
-            start_id (str): ID of the starting node
-            end_id (str): ID of the destination node
+            start_id (str): Identifiant du nœud de départ
+            end_id (str): Identifiant du nœud d'arrivée
             
         Returns:
-            tuple: (total distance, list of node IDs in the path)
+            tuple: (distance totale, liste des identifiants des nœuds du chemin)
         """
         from heapq import heappush, heappop
         
@@ -102,11 +114,11 @@ class Graph:
         return float('inf'), []
 
     def print_path(self, path, total_distance):
-        """ Print the path found with the details of the nodes.
+        """ Affiche le chemin trouvé avec les détails des nœuds.
         
         Args:
-            path (list): List of node IDs in the path
-            total_distance (float): Total distance of the path
+            path (list): Liste des identifiants des nœuds du chemin
+            total_distance (float): Distance totale du chemin
         """
         for i, node_id in enumerate(path):
             node = self.nodes[node_id]
@@ -116,14 +128,17 @@ class Graph:
                 print(f"{i} - To: ['{node_id}', '{node.name or 'None'}', '{node.lat}', '{node.lon}']: distance = {total_distance if i == len(path)-1 else 0} km")
 
     def haversine_distance(self, id1, id2):
-        """Calculate the haversine distance between two points.
+        """Calcule la distance de Haversine entre deux points.
+        
+        La formule de Haversine permet de calculer la distance à vol d'oiseau
+        entre deux points sur une sphère.
         
         Args:
-            id1 (str): ID of the first point
-            id2 (str): ID of the second point
+            id1 (str): Identifiant du premier point
+            id2 (str): Identifiant du second point
             
         Returns:
-            float: The haversine distance between the two points
+            float: Distance en kilomètres entre les deux points
         """
         node1 = self.nodes[id1]
         node2 = self.nodes[id2]
@@ -143,14 +158,17 @@ class Graph:
         return R * c
 
     def a_star(self, start_id, end_id):
-        """Find the shortest path between two points using A* with haversine distance.
+        """Trouve le plus court chemin entre deux points avec l'algorithme A*.
+        
+        Utilise une heuristique (distance de Haversine) pour optimiser la recherche
+        par rapport à l'algorithme de Dijkstra.
         
         Args:
-            start_id (str): ID of the starting node
-            end_id (str): ID of the destination node
+            start_id (str): Identifiant du nœud de départ
+            end_id (str): Identifiant du nœud d'arrivée
             
         Returns:
-            tuple: (total distance, list of node IDs in the path)
+            tuple: (distance totale, liste des identifiants des nœuds du chemin)
         """
         from heapq import heappush, heappop
         import math

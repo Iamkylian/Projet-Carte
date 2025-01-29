@@ -4,11 +4,7 @@ import numpy as np
 from graph import Graph
 import os
 import psutil
-import cProfile
-import pstats
 from memory_profiler import profile
-import seaborn as sns
-import sys
 
 class BenchmarkAnalyzer:
     """Classe pour analyser et comparer les performances des algorithmes de recherche de chemin.
@@ -19,13 +15,18 @@ class BenchmarkAnalyzer:
     - Générer des graphiques de comparaison
     - Mesurer l'utilisation des ressources (temps, mémoire, CPU)
     
-    Attributes:
+    Attributs:
         nodes_file (str): Chemin vers le fichier CSV des nœuds
         ways_file (str): Chemin vers le fichier CSV des chemins
         graph_name (str): Nom du graphe pour l'identification
         graph (Graph): Instance du graphe chargé
         generate_graphs (bool): Indique si les graphiques doivent être générés
         output_dir (str): Dossier de sortie pour les graphiques
+        
+    Méthodes principales:
+        load_graph(): Charge le graphe depuis les fichiers CSV
+        run_comparison(): Compare les performances des algorithmes
+        benchmark_load_csv_methods(): Compare les méthodes de chargement CSV
     """
 
     def __init__(self, nodes_file, ways_file, graph_name="default", generate_graphs=True, output_dir="./benchmarks"):
@@ -218,6 +219,83 @@ class BenchmarkAnalyzer:
             print(f"⚡ CPU             : {results['avg_cpu']:.1f}%")
             print(f"📏 Distance totale : {results['distance']:.2f} km")
             print(f"🔢 Nœuds parcourus : {results['path_length']}")
+            
+    def benchmark_load_csv_methods(self):
+        """Compare les performances des différentes méthodes de chargement."""
+        from load_csv_methods import GraphCSV, GraphPandas, GraphPolars
+        
+        # Modification ici : on n'ajoute plus "loading_methods" au chemin
+        self.path_output_dir = self.output_dir
+        os.makedirs(self.path_output_dir, exist_ok=True)
+        
+        results = {}
+        methods = ['CSV Python', 'Pandas', 'Polars']
+        
+        # Test de la méthode CSV Python
+        try:
+            start_time = time.time()
+            graph_csv = GraphCSV()
+            graph_csv.load_from_csv(self.nodes_file, self.ways_file)
+            results['CSV Python'] = time.time() - start_time
+        except Exception as e:
+            print(f"Erreur avec CSV Python: {str(e)}")
+            results['CSV Python'] = None
+            
+        # Test de la méthode Pandas
+        try:
+            start_time = time.time()
+            graph_pandas = GraphPandas()
+            graph_pandas.load_from_csv(self.nodes_file, self.ways_file)
+            results['Pandas'] = time.time() - start_time
+        except Exception as e:
+            print(f"Erreur avec Pandas: {str(e)}")
+            results['Pandas'] = None
+            
+        # Test de la méthode Polars
+        try:
+            start_time = time.time()
+            graph_polars = GraphPolars()
+            graph_polars.load_from_csv(self.nodes_file, self.ways_file)
+            results['Polars'] = time.time() - start_time
+        except Exception as e:
+            print(f"Erreur avec Polars: {str(e)}")
+            results['Polars'] = None
+
+        # Création des graphiques
+        if self.generate_graphs:
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+            
+            methods = list(results.keys())
+            times = list(results.values())
+            
+            # Premier graphique
+            ax1.bar(methods, times, color=['#2ecc71', '#e74c3c', '#3498db'])
+            ax1.set_title(f'Temps de chargement - {self.graph_name}')
+            ax1.set_ylabel('Temps (secondes)')
+            
+            # Calcul et affichage des pourcentages
+            min_time = min(t for t in times if t is not None)
+            for i, v in enumerate(times):
+                if v is not None:
+                    pct_slower = ((v - min_time) / min_time) * 100
+                    ax1.text(i, v, f'{v:.3f}s\n(+{pct_slower:.1f}%)', 
+                            ha='center', va='bottom')
+            
+            # Deuxième graphique - Comparaison relative
+            relative_times = [t/min_time if t is not None else 0 for t in times]
+            ax2.bar(methods, relative_times, color=['#2ecc71', '#e74c3c', '#3498db'])
+            ax2.set_title('Comparaison relative')
+            ax2.set_ylabel('Ratio (1 = plus rapide)')
+            
+            for i, v in enumerate(relative_times):
+                if v > 0:
+                    ax2.text(i, v, f'{v:.2f}x', ha='center', va='bottom')
+            
+            plt.tight_layout()
+            plt.savefig(os.path.join(self.path_output_dir, f'{self.graph_name}_load_csv_methods_comparison.png'))
+            plt.close()
+        
+        return results
 
 def main():
     """

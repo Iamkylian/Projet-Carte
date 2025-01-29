@@ -1,3 +1,7 @@
+"""
+Ce fichier contient les données des jeux de données utilisés pour les tests.
+"""
+
 GRAPH_DATA = [
     {
         "name": "Serres-sur-Arget",
@@ -5,7 +9,7 @@ GRAPH_DATA = [
         "ways": "./../data/france/serres-sur-arget/osm_ways.csv",
         "points": {
             "start": "469819297",    # Saint-Pierre-de-Rivière
-            "end": ["1792742726", "1205464576", "8490363670"]  # Las Prados, Cabane Coumauzil - barguillere, Grotte Bernard
+            "end": ["469819297","1792742726", "8490363670", "1205464576"]  # Las Prados, Grotte Bernard, Cabane Coumauzil - barguillere
         }
     },
     {
@@ -14,7 +18,7 @@ GRAPH_DATA = [
         "ways": "./../data/france/ariege/osm_ways.csv",
         "points": {
             "start": "469819297", # Saint-Pierre-de-Rivière
-            "end": ["1792742726", "8490363670"] # Las Prados, Grotte Bernard
+            "end": ["469819297", "1792742726", "8490363670"] # Las Prados, Grotte Bernard
         }
     },
     # {
