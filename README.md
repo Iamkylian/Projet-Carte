@@ -500,3 +500,4 @@ Le projet a permis d'implémenter et de comparer différentes approches de calcu
 - L'optimisation des structures de données
 - L'amélioration de l'heuristique A*
 
+Bien que le commencement de ce projet ai été compliqué, du fait de la complexité des données et des fichiers de départ fournis qui n'étaient pas valides, il m'a permis de découvrir de nouvelles facons de réaliser des benchmarks et de gérer des données.
